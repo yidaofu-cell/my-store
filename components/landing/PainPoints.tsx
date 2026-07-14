@@ -1,15 +1,16 @@
 import React from 'react';
-import { painPoints } from '@/data/content';
+import { painPoints as defaultPain } from '@/data/content';
 
-export function PainPoints() {
+export function PainPoints({ data }: { data?: any }) {
+  const pp = data ? { title: data.title, points: data.points } : defaultPain;
   return (
     <section className="py-16 md:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-extrabold text-center text-gray-900 mb-4">
-          {painPoints.title}
+          {pp.title}
         </h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-          {painPoints.points.map((point, idx) => (
+          {pp.points.map((point: any, idx: number) => (
             <div
               key={idx}
               className="group p-6 rounded-2xl border border-gray-100 hover:border-red-200 hover:shadow-lg hover:shadow-red-500/5 transition-all duration-300"

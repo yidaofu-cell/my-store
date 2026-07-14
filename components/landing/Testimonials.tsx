@@ -1,14 +1,15 @@
 import React from 'react';
-import { testimonialsContent } from '@/data/content';
+import { testimonialsContent as defaultTestimonials } from '@/data/content';
 import { Star } from 'lucide-react';
 
-export function Testimonials() {
+export function Testimonials({ data }: { data?: any }) {
+  const tc = data ? { title: data.title, items: data.items } : defaultTestimonials;
   return (
     <section id="reviews" className="py-16 md:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
-            {testimonialsContent.title}
+            {tc.title}
           </h2>
           <div className="flex items-center justify-center gap-1">
             {[...Array(5)].map((_, i) => (
@@ -18,7 +19,7 @@ export function Testimonials() {
           </div>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
-          {testimonialsContent.items.map((item, idx) => (
+          {tc.items.map((item: any, idx: number) => (
             <div
               key={idx}
               className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 border border-gray-100 shadow-sm"

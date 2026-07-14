@@ -1,20 +1,21 @@
 import React from 'react';
-import { featuresContent } from '@/data/content';
+import { featuresContent as defaultFeatures } from '@/data/content';
 
-export function Features() {
+export function Features({ data }: { data?: any }) {
+  const fc = data ? { title: data.title, subtitle: data.subtitle, items: data.items } : defaultFeatures;
   return (
     <section id="features" className="py-16 md:py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
-            {featuresContent.title}
+            {fc.title}
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            {featuresContent.subtitle}
+            {fc.subtitle}
           </p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuresContent.items.map((item, idx) => (
+          {fc.items.map((item: any, idx: number) => (
             <div
               key={idx}
               className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100"

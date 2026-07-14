@@ -2,13 +2,15 @@
 import React, { useState } from 'react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
-import { product, discount } from '@/data/product';
+import { product as defaultProduct, discount as defaultDiscount } from '@/data/product';
 import { ShieldCheck, Truck, Minus, Plus } from 'lucide-react';
 
-export function FloatingBuyCard() {
+export function FloatingBuyCard({ product: dbProduct }: { product?: any }) {
+  const p = dbProduct || defaultProduct;
+  const d = defaultDiscount;
   const [quantity, setQuantity] = useState(1);
-  const subtotal = product.price * quantity;
-  const discounted = subtotal * (1 - discount.percentage / 100);
+  const subtotal = p.price * quantity;
+  const discounted = subtotal * (1 - d.percentage / 100);
 
   return (
     <div className="hidden lg:block fixed right-4 top-32 w-72 bg-white rounded-2xl shadow-2xl border border-gray-200 p-5 z-40">
@@ -17,15 +19,15 @@ export function FloatingBuyCard() {
         <span className="text-5xl">❄️</span>
       </div>
 
-      <h3 className="font-bold text-gray-900 mb-1">{product.name}</h3>
+      <h3 className="font-bold text-gray-900 mb-1">{p.name}</h3>
       <div className="flex items-center gap-2 mb-4">
         <span className="text-2xl font-extrabold text-indigo-600">
-          ${product.price}
+          ${p.price?.toFixed(2)}
         </span>
         <span className="text-sm text-gray-400 line-through">
-          ${product.compareAtPrice}
+          ${p.compareAtPrice?.toFixed(2)}
         </span>
-        <Badge variant="danger">{discount.label}</Badge>
+        <Badge variant="danger">{d.label}</Badge>
       </div>
 
       {/* Quantity Selector */}
@@ -55,7 +57,7 @@ export function FloatingBuyCard() {
           <span>${subtotal.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-green-600 font-semibold">
-          <span>Discount ({discount.percentage}%)</span>
+          <span>Discount ({d.percentage}%)</span>
           <span>-${(subtotal - discounted).toFixed(2)}</span>
         </div>
         <div className="flex justify-between font-bold text-gray-900 border-t border-gray-100 pt-1 mt-1">
@@ -66,7 +68,7 @@ export function FloatingBuyCard() {
 
       {/* CTA */}
       <Button href={`/checkout?qty=${quantity}`} variant="secondary" size="md" className="w-full mb-3">
-        🔥 Buy Now — Save {discount.percentage}%
+        🔥 Buy Now — Save {d.percentage}%
       </Button>
 
       {/* Trust */}
