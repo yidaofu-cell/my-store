@@ -2,6 +2,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { loadStripe } from '@stripe/stripe-js';
+
+export const dynamic = 'force-dynamic';
 import { Elements } from '@stripe/react-stripe-js';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
