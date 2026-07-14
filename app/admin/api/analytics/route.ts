@@ -15,7 +15,7 @@ export async function GET() {
     // Simplified — in production, filter by date
 
     const allOrders = await db.select().from(orders).where(eq(orders.paymentStatus, 'paid'));
-    const totalSales = allOrders.reduce((s, o) => s + o.totalAmount, 0);
+    const totalSales = allOrders.reduce((s: number, o: any) => s + (o.totalAmount || 0), 0);
 
     const recentOrders = await db.select().from(orders).orderBy(orders.createdAt).limit(10);
 
