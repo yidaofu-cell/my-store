@@ -74,13 +74,7 @@ export async function createOrder(data: Omit<Order, 'id' | 'orderNumber' | 'crea
       notes: '',
     }).returning();
 
-    return {
-      ...order,
-      paymentStatus: order.paymentStatus as Order['paymentStatus'],
-      fulfillmentStatus: order.fulfillmentStatus || 'pending',
-      notes: order.notes || '',
-      createdAt: order.createdAt?.toISOString() || new Date().toISOString(),
-    };
+    return mapOrder(order);
   } catch {
     // Fallback to in-memory
     const fallback: Order = {
@@ -102,13 +96,7 @@ export async function getOrder(id: number): Promise<Order | undefined> {
     const result = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
     if (result.length === 0) return undefined;
     const o = result[0];
-    return {
-      ...o,
-      paymentStatus: o.paymentStatus as Order['paymentStatus'],
-      fulfillmentStatus: o.fulfillmentStatus || 'pending',
-      notes: o.notes || '',
-      createdAt: o.createdAt?.toISOString() || '',
-    };
+    return mapOrder(o);
   } catch {
     return Array.from(fallbackOrders.values()).find((o) => o.id === id);
   }
@@ -118,17 +106,40 @@ export async function getOrderByPaymentIntent(piId: string): Promise<Order | und
   try {
     const result = await db.select().from(orders).where(eq(orders.stripePaymentIntentId, piId)).limit(1);
     if (result.length === 0) return undefined;
-    const o = result[0];
-    return {
-      ...o,
-      paymentStatus: o.paymentStatus as Order['paymentStatus'],
-      fulfillmentStatus: o.fulfillmentStatus || 'pending',
-      notes: o.notes || '',
-      createdAt: o.createdAt?.toISOString() || '',
-    };
+    return mapOrder(result[0]);
   } catch {
     return Array.from(fallbackOrders.values()).find((o) => o.stripePaymentIntentId === piId);
   }
+}
+
+function mapOrder(o: any): Order {
+  return {
+    id: o.id,
+    orderNumber: o.orderNumber,
+    customerName: o.customerName,
+    email: o.email,
+    phone: o.phone || '',
+    country: o.country,
+    address: o.address,
+    city: o.city,
+    state: o.state || '',
+    zipCode: o.zipCode,
+    productName: o.productName,
+    quantity: o.quantity,
+    unitPrice: o.unitPrice,
+    subtotal: o.subtotal,
+    shippingMethod: o.shippingMethod,
+    shippingFee: o.shippingFee,
+    discountCode: o.discountCode,
+    discountAmount: o.discountAmount,
+    totalAmount: o.totalAmount,
+    currency: o.currency,
+    stripePaymentIntentId: o.stripePaymentIntentId || '',
+    paymentStatus: (o.paymentStatus || 'pending') as Order['paymentStatus'],
+    fulfillmentStatus: o.fulfillmentStatus || 'pending',
+    notes: o.notes || '',
+    createdAt: o.createdAt?.toISOString?.() || String(o.createdAt || ''),
+  };
 }
 
 export async function updatePaymentStatus(id: number, status: Order['paymentStatus']): Promise<Order | undefined> {
@@ -148,13 +159,7 @@ export async function updatePaymentStatus(id: number, status: Order['paymentStat
 export async function getAllOrders(): Promise<Order[]> {
   try {
     const result = await db.select().from(orders).orderBy(orders.createdAt);
-    return result.map((o) => ({
-      ...o,
-      paymentStatus: o.paymentStatus as Order['paymentStatus'],
-      fulfillmentStatus: o.fulfillmentStatus || 'pending',
-      notes: o.notes || '',
-      createdAt: o.createdAt?.toISOString() || '',
-    }));
+    return result.map(mapOrder);
   } catch {
     return Array.from(fallbackOrders.values()).sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
