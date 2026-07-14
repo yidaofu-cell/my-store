@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/Badge';
 import { CheckCircle, Package, Truck, Mail } from 'lucide-react';
 import { Order } from '@/lib/order-service';
 
-export default function ThankYouPage() {
+function ThankYouContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
@@ -136,5 +136,13 @@ export default function ThankYouPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function ThankYouPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-gray-500">Loading...</div>}>
+      <ThankYouContent />
+    </Suspense>
   );
 }
