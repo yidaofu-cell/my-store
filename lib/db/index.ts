@@ -8,8 +8,12 @@ function createMockDb() {
   const emptyResult = Promise.resolve(emptyArray);
 
   // Mock chainable query builder that always returns empty
-  const mockQuery = new Proxy(() => {}, {
-    get() { return mockQuery; },
+  const mockQuery: any = new Proxy(function() {}, {
+    get(_target: any, _prop: string) {
+      // If the runtime tries to await this, resolve to empty array
+      if (_prop === 'then') return (resolve: any) => resolve(emptyArray);
+      return mockQuery;
+    },
     apply() { return mockQuery; },
   });
 
@@ -18,7 +22,7 @@ function createMockDb() {
     insert: () => ({ values: () => emptyResult, returning: () => emptyResult }),
     update: () => ({ set: () => ({ where: () => emptyResult }) }),
     delete: () => ({ where: () => emptyResult }),
-  };
+  } as any;
 }
 
 export function getDb() {
