@@ -25,7 +25,8 @@
     "react-dom": "19.2.4",
     "recharts": "^3.9.2",
     "resend": "^6.17.2",
-    "stripe": "^22.3.1"
+    "stripe": "^22.3.1",
+    "tsx": "^4.23.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
