@@ -19,8 +19,8 @@ export async function GET() {
 
     return NextResponse.json({
       ...product,
-      features: features.map((f) => f.label),
-      specs: specs.map((s) => ({ label: s.label, value: s.value })),
+      features: features.map((f: any) => f.label),
+      specs: specs.map((s: any) => ({ label: s.label, value: s.value })),
     });
   } catch {
     return NextResponse.json(null);
