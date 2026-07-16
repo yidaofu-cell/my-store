@@ -121,6 +121,43 @@ export const discountCodes = pgTable('discount_codes', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+// ============ Ozon 利润测算 ============
+export const ozonReports = pgTable('ozon_reports', {
+  id: serial('id').primaryKey(),
+  month: varchar('month', { length: 10 }).notNull().unique(), // YYYY-MM
+  year: integer('year').notNull(),
+  monthNum: integer('month_num').notNull(),
+
+  // Ozon 平台数据
+  totalRevenue: real('total_revenue').notNull().default(0),
+  ozonCommission: real('ozon_commission').notNull().default(0),
+  logisticsFee: real('logistics_fee').notNull().default(0),
+  returnLoss: real('return_loss').notNull().default(0),
+  finesPenalties: real('fines_penalties').notNull().default(0),
+  otherPlatformFees: real('other_platform_fees').notNull().default(0),
+  netPayout: real('net_payout').notNull().default(0),
+
+  // 额外成本
+  purchaseCost: real('purchase_cost').notNull().default(0),
+  shippingCost: real('shipping_cost').notNull().default(0),
+  laborCost: real('labor_cost').notNull().default(0),
+  marketingCost: real('marketing_cost').notNull().default(0),
+  otherCost: real('other_cost').notNull().default(0),
+
+  // 计算结果
+  totalPlatformFees: real('total_platform_fees').notNull().default(0),
+  totalAdditionalCost: real('total_additional_cost').notNull().default(0),
+  grossProfit: real('gross_profit').notNull().default(0),
+  netProfit: real('net_profit').notNull().default(0),
+  profitMargin: real('profit_margin').notNull().default(0),
+
+  // 附件
+  screenshotUrl: varchar('screenshot_url', { length: 500 }).default(''),
+  notes: text('notes').default(''),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
 // ============ 管理员 ============
 export const admins = pgTable('admins', {
   id: serial('id').primaryKey(),

@@ -15,6 +15,7 @@ const navItems = [
   { href: '/admin/content', label: 'Content', icon: FileText },
   { href: '/admin/discounts', label: 'Discounts', icon: Percent },
   { href: '/admin/shipping', label: 'Shipping', icon: Truck },
+  { href: '/admin/ozon', label: 'Ozon Profit', icon: BarChart3 },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
