@@ -83,7 +83,7 @@ export async function PUT(req: NextRequest) {
     const db = getDb();
     const c = calc(body);
 
-    await db.update(ozonReports).set({
+    const setData: any = {
       salesRevenue: body.salesRevenue || 0,
       returns: body.returns || 0,
       ozonCommission: body.ozonCommission || 0,
@@ -108,7 +108,15 @@ export async function PUT(req: NextRequest) {
       screenshotUrl: body.screenshotUrl || '',
       notes: body.notes || '',
       updatedAt: new Date(),
-    }).where(eq(ozonReports.id, body.id));
+    };
+
+    if (body.month) {
+      setData.month = body.month;
+      setData.year = parseInt(body.month.split('-')[0]);
+      setData.monthNum = parseInt(body.month.split('-')[1]);
+    }
+
+    await db.update(ozonReports).set(setData).where(eq(ozonReports.id, body.id));
 
     return NextResponse.json({ ok: true });
   } catch (e: any) {

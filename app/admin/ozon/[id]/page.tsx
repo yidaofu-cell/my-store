@@ -33,7 +33,7 @@ export default function EditOzonPage() {
   function set(k: string, v: string) { setData({ ...data, [k]: v }); }
 
   async function handleSave() {
-    const body: any = { id: data.id };
+    const body: any = { id: data.id, month: data.month };
     const fields = ['salesRevenue','returns','ozonCommission','deliveryService','partnerServices','fboService','promotionAdvertising','otherFines','compensation','otherAccruals','exchangeRate','purchaseCost','shippingCost','laborCost','marketingCost','otherCost'];
     fields.forEach((f) => { body[f] = parseFloat(data[f]) || 0; });
     body.notes = data.notes || '';
@@ -63,6 +63,13 @@ export default function EditOzonPage() {
       </div>
 
       <div className="space-y-6">
+        {/* 月份选择 */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+          <label className="block text-sm font-medium text-gray-700 mb-1">报告月份</label>
+          <input type="month" value={data.month || ''} onChange={(e) => set('month', e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
+        </div>
+
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
           <h2 className="font-semibold text-gray-900 mb-1">📊 Ozon 平台数据 <span className="text-xs text-gray-400 font-normal">（卢布 ₽）</span></h2>
           <div className="grid grid-cols-2 gap-4 mt-4">
