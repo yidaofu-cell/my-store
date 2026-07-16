@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Package, ShoppingCart, FileText,
   Percent, Truck, Settings, BarChart3, LogOut,
-  ChevronLeft, Menu, Store,
+  ChevronLeft, Menu, Store, Globe,
 } from 'lucide-react';
 
 const navItems = [
@@ -16,7 +16,8 @@ const navItems = [
   { href: '/admin/discounts', label: 'Discounts', icon: Percent },
   { href: '/admin/shipping', label: 'Shipping', icon: Truck },
   { href: '/admin/ozon', label: 'Ozon Profit', icon: BarChart3 },
-  { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/admin/wb', label: 'WB Profit', icon: BarChart3 },
+  { href: '/admin/russia', label: 'Russia Total', icon: Globe },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 

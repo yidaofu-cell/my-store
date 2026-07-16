@@ -164,6 +164,49 @@ export const ozonReports = pgTable('ozon_reports', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
+// ============ WB 利润测算 ============
+export const wbReports = pgTable('wb_reports', {
+  id: serial('id').primaryKey(),
+  month: varchar('month', { length: 10 }).notNull().unique(),
+  year: integer('year').notNull(),
+  monthNum: integer('month_num').notNull(),
+
+  // 收入（卢布）
+  salesRevenue: real('sales_revenue').notNull().default(0),
+  lossesDefects: real('losses_defects').notNull().default(0),
+
+  // 支出（卢布）
+  logisticsFee: real('logistics_fee').notNull().default(0),
+  storageFee: real('storage_fee').notNull().default(0),
+  inboundFee: real('inbound_fee').notNull().default(0),
+  fines: real('fines').notNull().default(0),
+  commissionAcquiring: real('commission_acquiring').notNull().default(0),
+  deductions: real('deductions').notNull().default(0),
+  membershipFee: real('membership_fee').notNull().default(0),
+
+  // 汇率
+  exchangeRate: real('exchange_rate').notNull().default(0.08),
+
+  // 额外成本（人民币）
+  purchaseCost: real('purchase_cost').notNull().default(0),
+  shippingCost: real('shipping_cost').notNull().default(0),
+  laborCost: real('labor_cost').notNull().default(0),
+  marketingCost: real('marketing_cost').notNull().default(0),
+  otherCost: real('other_cost').notNull().default(0),
+
+  // 计算结果
+  wbNetRub: real('wb_net_rub').notNull().default(0),
+  wbNetRmb: real('wb_net_rmb').notNull().default(0),
+  totalAdditionalCost: real('total_additional_cost').notNull().default(0),
+  netProfit: real('net_profit').notNull().default(0),
+  profitMargin: real('profit_margin').notNull().default(0),
+
+  screenshotUrl: varchar('screenshot_url', { length: 500 }).default(''),
+  notes: text('notes').default(''),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
 // ============ 管理员 ============
 export const admins = pgTable('admins', {
   id: serial('id').primaryKey(),
