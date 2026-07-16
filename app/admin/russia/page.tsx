@@ -102,6 +102,15 @@ export default function RussiaPage() {
   const totalWbProfit = rows.reduce((s,r)=>s+r.wProfit,0);
   const totalCombined = totalOzonProfit + totalWbProfit;
   const totalCombinedRev = rows.reduce((s,r)=>s+r.combinedRevenue,0);
+  const totalSalesRub = rows.reduce((s,r)=>s+(parseFloat(ozon.find(o=>o.month===r.month)?.salesRevenue)||0)+(parseFloat(wb.find(w=>w.month===r.month)?.salesRevenue)||0),0);
+  const totalNetRub = rows.reduce((s,r)=>{
+    const o = ozon.find(x=>x.month===r.month)||{} as any; const w = wb.find(x=>x.month===r.month)||{} as any;
+    return s+(o.ozonNetRub||0)+(w.wbNetRub||0);
+  },0);
+  const totalNetRmb = rows.reduce((s,r)=>{
+    const o = ozon.find(x=>x.month===r.month)||{} as any; const w = wb.find(x=>x.month===r.month)||{} as any;
+    return s+(o.ozonNetRmb||0)+(w.wbNetRmb||0);
+  },0);
 
   const chartData = rows.map(r=>({
     month: r.monthLabel,
@@ -119,21 +128,26 @@ export default function RussiaPage() {
 
       {/* 汇总卡片 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-2xl border border-indigo-200 p-5 shadow-sm">
-          <p className="text-sm text-gray-500">Ozon净利润（含分摊）</p>
-          <p className={`text-2xl font-bold ${totalOzonProfit>=0?'text-green-600':'text-red-600'}`}>¥{Math.round(totalOzonProfit).toLocaleString()}</p>
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+          <p className="text-sm text-gray-500">总销售额（卢布）</p>
+          <p className="text-lg text-gray-400">₽{Math.round(totalSalesRub).toLocaleString()}</p>
+          <p className="text-2xl font-bold text-gray-900">¥{Math.round(totalCombinedRev).toLocaleString()}</p>
         </div>
-        <div className="bg-white rounded-2xl border border-rose-200 p-5 shadow-sm">
-          <p className="text-sm text-gray-500">WB净利润（含分摊）</p>
-          <p className={`text-2xl font-bold ${totalWbProfit>=0?'text-green-600':'text-red-600'}`}>¥{Math.round(totalWbProfit).toLocaleString()}</p>
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+          <p className="text-sm text-gray-500">总净收入（卢布）</p>
+          <p className="text-lg text-gray-400">₽{Math.round(totalNetRub).toLocaleString()}</p>
+          <p className="text-2xl font-bold text-blue-600">¥{Math.round(totalNetRmb).toLocaleString()}</p>
         </div>
         <div className="bg-white rounded-2xl border-2 border-indigo-300 p-5 shadow-sm">
           <p className="text-sm text-gray-500">俄罗斯总利润</p>
           <p className={`text-2xl font-bold ${totalCombined>=0?'text-indigo-600':'text-red-600'}`}>¥{Math.round(totalCombined).toLocaleString()}</p>
+          <p className="text-xs text-gray-500">利润率 {totalCombinedRev>0?((totalCombined/totalCombinedRev)*100).toFixed(1):'0.0'}%</p>
         </div>
         <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-          <p className="text-sm text-gray-500">总利润率</p>
-          <p className="text-2xl font-bold">{totalCombinedRev>0?((totalCombined/totalCombinedRev)*100).toFixed(1):'0.0'}%</p>
+          <p className="text-sm text-gray-500">Ozon净利润</p>
+          <p className={`text-2xl font-bold ${totalOzonProfit>=0?'text-indigo-600':'text-red-600'}`}>¥{Math.round(totalOzonProfit).toLocaleString()}</p>
+          <p className="text-sm text-gray-500 mt-2">WB净利润</p>
+          <p className={`text-2xl font-bold ${totalWbProfit>=0?'text-rose-600':'text-red-600'}`}>¥{Math.round(totalWbProfit).toLocaleString()}</p>
         </div>
       </div>
 
