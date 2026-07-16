@@ -207,6 +207,16 @@ export const wbReports = pgTable('wb_reports', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
+// ============ 共享成本（俄罗斯市场均摊） ============
+export const sharedCosts = pgTable('shared_costs', {
+  id: serial('id').primaryKey(),
+  month: varchar('month', { length: 10 }).notNull().unique(),
+  totalShipping: real('total_shipping').notNull().default(0),    // 当月总国际运费(RMB)
+  totalStorage: real('total_storage').notNull().default(0),      // 当月总仓储费(RMB)
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
 // ============ 管理员 ============
 export const admins = pgTable('admins', {
   id: serial('id').primaryKey(),
