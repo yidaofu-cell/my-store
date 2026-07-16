@@ -25,6 +25,7 @@ export async function PUT(req: NextRequest) {
       await db.update(sharedCosts).set({
         totalShipping: body.totalShipping || 0,
         totalStorage: body.totalStorage || 0,
+        totalOtherLabor: body.totalOtherLabor || 0,
         updatedAt: new Date(),
       }).where(eq(sharedCosts.month, body.month));
     } else {
@@ -32,6 +33,7 @@ export async function PUT(req: NextRequest) {
         month: body.month,
         totalShipping: body.totalShipping || 0,
         totalStorage: body.totalStorage || 0,
+        totalOtherLabor: body.totalOtherLabor || 0,
       });
     }
 

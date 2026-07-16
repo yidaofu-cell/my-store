@@ -211,8 +211,9 @@ export const wbReports = pgTable('wb_reports', {
 export const sharedCosts = pgTable('shared_costs', {
   id: serial('id').primaryKey(),
   month: varchar('month', { length: 10 }).notNull().unique(),
-  totalShipping: real('total_shipping').notNull().default(0),    // 当月总国际运费(RMB)
-  totalStorage: real('total_storage').notNull().default(0),      // 当月总仓储费(RMB)
+  totalShipping: real('total_shipping').notNull().default(0),
+  totalStorage: real('total_storage').notNull().default(0),
+  totalOtherLabor: real('total_other_labor').notNull().default(0),   // 管理人事行政等其他人力
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });

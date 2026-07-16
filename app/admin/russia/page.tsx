@@ -9,6 +9,7 @@ export default function RussiaPage() {
   const [sharedCosts, setSharedCosts] = useState<any[]>([]);
   const [localShipping, setLocalShipping] = useState<Record<string, number>>({});
   const [localStorage, setLocalStorage] = useState<Record<string, number>>({});
+  const [localOtherLabor, setLocalOtherLabor] = useState<Record<string, number>>({});
   const [saved, setSaved] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -17,17 +18,17 @@ export default function RussiaPage() {
     fetch('/admin/api/shared-costs').then(r=>r.json()).then(d=>{
       const arr = Array.isArray(d)?d:[];
       setSharedCosts(arr);
-      const ship: Record<string,number>={}, stor: Record<string,number>={};
-      arr.forEach((c:any)=>{ ship[c.month]=c.totalShipping||0; stor[c.month]=c.totalStorage||0; });
-      setLocalShipping(ship); setLocalStorage(stor);
+      const ship: Record<string,number>={}, stor: Record<string,number>={}, labor: Record<string,number>={};
+      arr.forEach((c:any)=>{ ship[c.month]=c.totalShipping||0; stor[c.month]=c.totalStorage||0; labor[c.month]=c.totalOtherLabor||0; });
+      setLocalShipping(ship); setLocalStorage(stor); setLocalOtherLabor(labor);
     });
   }, []);
 
-  const saveShared = useCallback(async (month: string, totalShipping: number, totalStorage: number) => {
+  const saveShared = useCallback(async (month: string, totalShipping: number, totalStorage: number, totalOtherLabor: number) => {
     await fetch('/admin/api/shared-costs', {
       method: 'PUT',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ month, totalShipping, totalStorage }),
+      body: JSON.stringify({ month, totalShipping, totalStorage, totalOtherLabor }),
     });
     setSaved(prev=>({...prev,[month]:true}));
     setTimeout(()=>setSaved(prev=>({...prev,[month]:false})), 1500);
@@ -38,6 +39,9 @@ export default function RussiaPage() {
   }
   function updateStor(month:string, v:number) {
     setLocalStorage(prev=>({...prev,[month]:v}));
+  }
+  function updateOtherLabor(month:string, v:number) {
+    setLocalOtherLabor(prev=>({...prev,[month]:v}));
   }
 
   // 合并所有月份
@@ -60,18 +64,21 @@ export default function RussiaPage() {
     // 共享成本分摊
     const totalShip = localShipping[month] || 0;
     const totalStore = localStorage[month] || 0;
+    const totalLabor = localOtherLabor[month] || 0;
     const oRatio = totalRub > 0 ? oSalesRub / totalRub : 0.5;
     const wRatio = totalRub > 0 ? wSalesRub / totalRub : 0.5;
     const oShipAlloc = Math.round(totalShip * oRatio);
     const wShipAlloc = Math.round(totalShip * wRatio);
     const oStoreAlloc = Math.round(totalStore * oRatio);
     const wStoreAlloc = Math.round(totalStore * wRatio);
+    const oLaborAlloc = Math.round(totalLabor * oRatio);
+    const wLaborAlloc = Math.round(totalLabor * wRatio);
 
     // 各自额外成本 + 分摊的共享成本
     const oOwnCost = (o.purchaseCost||0) + (o.shippingCost||0) + (o.laborCost||0) + (o.marketingCost||0) + (o.otherCost||0);
     const wOwnCost = (w.purchaseCost||0) + (w.shippingCost||0) + (w.laborCost||0) + (w.marketingCost||0) + (w.otherCost||0);
-    const oTotalCost = oOwnCost + oShipAlloc + oStoreAlloc;
-    const wTotalCost = wOwnCost + wShipAlloc + wStoreAlloc;
+    const oTotalCost = oOwnCost + oShipAlloc + oStoreAlloc + oLaborAlloc;
+    const wTotalCost = wOwnCost + wShipAlloc + wStoreAlloc + wLaborAlloc;
 
     // 真实利润 = 渠道净收入 - 自有成本 - 分摊成本
     const oProfit = oNetRmb - oTotalCost;
@@ -84,9 +91,10 @@ export default function RussiaPage() {
       oSalesRmb, wSalesRmb, combinedRevenue,
       oOwnCost, wOwnCost, oTotalCost, wTotalCost,
       oShipAlloc, wShipAlloc, oStoreAlloc, wStoreAlloc,
+      oLaborAlloc, wLaborAlloc,
       oProfit, wProfit, combinedProfit,
       oRatio: (oRatio*100).toFixed(0), wRatio: (wRatio*100).toFixed(0),
-      totalShip, totalStore,
+      totalShip, totalStore, totalLabor,
     };
   });
 
@@ -147,6 +155,7 @@ export default function RussiaPage() {
             <th className="px-3 py-3">月份</th><th className="px-3 py-3">销售占比</th>
             <th className="px-3 py-3">总运费(RMB)</th><th className="px-3 py-3">Ozon分摊</th><th className="px-3 py-3">WB分摊</th>
             <th className="px-3 py-3">总仓储(RMB)</th><th className="px-3 py-3">Ozon分摊</th><th className="px-3 py-3">WB分摊</th>
+            <th className="px-3 py-3">其他人力(RMB)</th><th className="px-3 py-3">Ozon分摊</th><th className="px-3 py-3">WB分摊</th>
             <th className="px-3 py-3">保存</th>
           </tr></thead>
           <tbody>
@@ -160,8 +169,11 @@ export default function RussiaPage() {
                 <td className="px-3 py-3"><input type="number" step="0.01" value={r.totalStore||''} onChange={e=>updateStor(r.month,parseFloat(e.target.value)||0)} className="w-24 px-2 py-1.5 rounded-lg border border-gray-200 text-sm" placeholder="0"/></td>
                 <td className="px-3 py-3 text-indigo-600 font-medium">¥{r.oStoreAlloc.toLocaleString()}</td>
                 <td className="px-3 py-3 text-rose-600 font-medium">¥{r.wStoreAlloc.toLocaleString()}</td>
+                <td className="px-3 py-3"><input type="number" step="0.01" value={r.totalLabor||''} onChange={e=>updateOtherLabor(r.month,parseFloat(e.target.value)||0)} className="w-24 px-2 py-1.5 rounded-lg border border-gray-200 text-sm" placeholder="0"/></td>
+                <td className="px-3 py-3 text-indigo-600 font-medium">¥{r.oLaborAlloc.toLocaleString()}</td>
+                <td className="px-3 py-3 text-rose-600 font-medium">¥{r.wLaborAlloc.toLocaleString()}</td>
                 <td className="px-3 py-3">
-                  <button onClick={()=>saveShared(r.month,r.totalShip,r.totalStore)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${saved[r.month]?'bg-green-100 text-green-700':'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
+                  <button onClick={()=>saveShared(r.month,r.totalShip,r.totalStore,r.totalLabor)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${saved[r.month]?'bg-green-100 text-green-700':'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
                     {saved[r.month]?'✅ 已保存':'💾 保存'}
                   </button>
                 </td>
@@ -177,8 +189,8 @@ export default function RussiaPage() {
         <div className="overflow-x-auto"><table className="w-full text-sm">
           <thead><tr className="text-left text-xs text-gray-500 uppercase bg-gray-50">
             <th className="px-4 py-3">月份</th>
-            <th className="px-4 py-3">Ozon净收入</th><th className="px-4 py-3">Ozon自成本</th><th className="px-4 py-3">Ozon分摊</th><th className="px-4 py-3">Ozon利润</th>
-            <th className="px-4 py-3">WB净收入</th><th className="px-4 py-3">WB自成本</th><th className="px-4 py-3">WB分摊</th><th className="px-4 py-3">WB利润</th>
+            <th className="px-4 py-3">Ozon净收入</th><th className="px-4 py-3">Ozon自成本</th><th className="px-4 py-3">Ozon总分摊</th><th className="px-4 py-3">Ozon利润</th>
+            <th className="px-4 py-3">WB净收入</th><th className="px-4 py-3">WB自成本</th><th className="px-4 py-3">WB总分摊</th><th className="px-4 py-3">WB利润</th>
             <th className="px-4 py-3 font-bold text-indigo-600">合计利润</th>
           </tr></thead>
           <tbody>
@@ -187,11 +199,11 @@ export default function RussiaPage() {
                 <td className="px-4 py-3 font-semibold">{r.monthLabel}月</td>
                 <td className="px-4 py-3">¥{Math.round(r.oSalesRmb).toLocaleString()}</td>
                 <td className="px-4 py-3 text-gray-500">¥{Math.round(r.oOwnCost).toLocaleString()}</td>
-                <td className="px-4 py-3 text-orange-500">¥{Math.round(r.oShipAlloc+r.oStoreAlloc).toLocaleString()}</td>
+                <td className="px-4 py-3 text-orange-500">¥{Math.round(r.oShipAlloc+r.oStoreAlloc+r.oLaborAlloc).toLocaleString()}</td>
                 <td className="px-4 py-3"><span className={`font-semibold ${r.oProfit>=0?'text-green-600':'text-red-600'}`}>¥{Math.round(r.oProfit).toLocaleString()}</span></td>
                 <td className="px-4 py-3">¥{Math.round(r.wSalesRmb).toLocaleString()}</td>
                 <td className="px-4 py-3 text-gray-500">¥{Math.round(r.wOwnCost).toLocaleString()}</td>
-                <td className="px-4 py-3 text-orange-500">¥{Math.round(r.wShipAlloc+r.wStoreAlloc).toLocaleString()}</td>
+                <td className="px-4 py-3 text-orange-500">¥{Math.round(r.wShipAlloc+r.wStoreAlloc+r.wLaborAlloc).toLocaleString()}</td>
                 <td className="px-4 py-3"><span className={`font-semibold ${r.wProfit>=0?'text-green-600':'text-red-600'}`}>¥{Math.round(r.wProfit).toLocaleString()}</span></td>
                 <td className="px-4 py-3"><span className={`font-bold ${r.combinedProfit>=0?'text-indigo-600':'text-red-600'}`}>¥{Math.round(r.combinedProfit).toLocaleString()}</span></td>
               </tr>
