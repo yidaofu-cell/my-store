@@ -127,7 +127,7 @@ export default function OzonListPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="month" stroke="#9ca3af" fontSize={12} />
                 <YAxis stroke="#9ca3af" fontSize={12} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} />
-                <Tooltip formatter={(v: number) => `¥${v.toLocaleString()}`} />
+                <Tooltip formatter={(v: any) => `¥${Number(v).toLocaleString()}`} />
                 <Legend />
                 <Bar dataKey="销售额" fill={COLORS.sales} radius={[6, 6, 0, 0]} />
                 <Bar dataKey="Ozon净收入" fill={COLORS.ozonNet} radius={[6, 6, 0, 0]} />
@@ -145,7 +145,7 @@ export default function OzonListPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="month" stroke="#9ca3af" fontSize={12} />
                 <YAxis stroke="#9ca3af" fontSize={12} tickFormatter={(v) => `${v}%`} />
-                <Tooltip formatter={(v: number) => `${v.toFixed(1)}%`} />
+                <Tooltip formatter={(v: any) => `${Number(v).toFixed(1)}%`} />
                 <Legend />
                 <Line type="monotone" dataKey="平台费用" stroke={COLORS.platform} strokeWidth={2} dot={{ r: 3 }} />
                 <Line type="monotone" dataKey="采购成本" stroke={COLORS.purchase} strokeWidth={2} dot={{ r: 3 }} />
