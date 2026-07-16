@@ -5,12 +5,14 @@ import Link from 'next/link';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 function calc(o: any) {
-  const tp = (o.ozonCommission||0)+(o.logisticsFee||0)+(o.returnLoss||0)+(o.finesPenalties||0)+(o.otherPlatformFees||0);
-  const tc = (o.purchaseCost||0)+(o.shippingCost||0)+(o.laborCost||0)+(o.marketingCost||0)+(o.otherCost||0);
-  const gp = (o.netPayout||0)-(o.purchaseCost||0)-(o.shippingCost||0);
-  const np = (o.netPayout||0)-tc;
-  const pm = (o.totalRevenue||0)>0 ? (np/o.totalRevenue)*100 : 0;
-  return { tp, tc, gp, np, pm };
+  const rate = parseFloat(o.exchangeRate) || 0.08;
+  const rub = (parseFloat(o.salesRevenue)||0) - (parseFloat(o.returns)||0) - (parseFloat(o.ozonCommission)||0) - (parseFloat(o.deliveryService)||0) - (parseFloat(o.partnerServices)||0) - (parseFloat(o.fboService)||0) - (parseFloat(o.promotionAdvertising)||0) - (parseFloat(o.otherFines)||0) + (parseFloat(o.compensation)||0) + (parseFloat(o.otherAccruals)||0);
+  const rmb = rub * rate;
+  const cost = (parseFloat(o.purchaseCost)||0)+(parseFloat(o.shippingCost)||0)+(parseFloat(o.laborCost)||0)+(parseFloat(o.marketingCost)||0)+(parseFloat(o.otherCost)||0);
+  const np = rmb - cost;
+  const revRmb = (parseFloat(o.salesRevenue)||0) * rate;
+  const pm = revRmb > 0 ? (np / revRmb) * 100 : 0;
+  return { rub, rmb, cost, np, pm };
 }
 
 export default function EditOzonPage() {
@@ -19,42 +21,33 @@ export default function EditOzonPage() {
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
-    fetch('/admin/api/ozon')
-      .then((r) => r.json())
-      .then((reports) => {
-        const found = reports.find((r: any) => r.id === parseInt(id as string));
-        if (found) setData(found);
-      });
+    fetch('/admin/api/ozon').then((r) => r.json()).then((reports) => {
+      const found = reports.find((r: any) => r.id === parseInt(id as string));
+      if (found) setData(found);
+    });
   }, [id]);
 
   if (!data) return <div className="text-gray-500 p-6">加载中...</div>;
 
   const c = calc(data);
-
   function set(k: string, v: string) { setData({ ...data, [k]: v }); }
 
   async function handleSave() {
     const body: any = { id: data.id };
-    const fields = ['totalRevenue','ozonCommission','logisticsFee','returnLoss','finesPenalties','otherPlatformFees','netPayout','purchaseCost','shippingCost','laborCost','marketingCost','otherCost'];
+    const fields = ['salesRevenue','returns','ozonCommission','deliveryService','partnerServices','fboService','promotionAdvertising','otherFines','compensation','otherAccruals','exchangeRate','purchaseCost','shippingCost','laborCost','marketingCost','otherCost'];
     fields.forEach((f) => { body[f] = parseFloat(data[f]) || 0; });
     body.notes = data.notes || '';
-
-    const res = await fetch('/admin/api/ozon', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (res.ok) router.push('/admin/ozon');
-    else alert('保存失败');
+    await fetch('/admin/api/ozon', { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    router.push('/admin/ozon');
   }
 
   async function handleDelete() {
     if (!confirm('确定删除？')) return;
-    await fetch(`/admin/api/ozon?id=${data.id}`, { method: 'DELETE' });
+    await fetch(`/admin/api/ozon?id=${data.id}`, { method:'DELETE' });
     router.push('/admin/ozon');
   }
 
-  const input = (label: string, key: string) => (
+  const rInput = (label: string, key: string) => (
     <div>
       <label className="block text-sm text-gray-500 mb-1">{label}</label>
       <input type="number" step="0.01" value={data[key] || ''} onChange={(e) => set(key, e.target.value)}
@@ -71,38 +64,51 @@ export default function EditOzonPage() {
 
       <div className="space-y-6">
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-          <h2 className="font-semibold text-gray-900 mb-4">📊 Ozon 平台数据</h2>
-          <div className="grid grid-cols-2 gap-4">
-            {input('总销售额', 'totalRevenue')}
-            {input('平台佣金', 'ozonCommission')}
-            {input('物流费用', 'logisticsFee')}
-            {input('退货损失', 'returnLoss')}
-            {input('罚款', 'finesPenalties')}
-            {input('其他平台费用', 'otherPlatformFees')}
-            {input('实际打款金额', 'netPayout')}
+          <h2 className="font-semibold text-gray-900 mb-1">📊 Ozon 平台数据 <span className="text-xs text-gray-400 font-normal">（卢布 ₽）</span></h2>
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            {rInput('销售', 'salesRevenue')}
+            {rInput('退货', 'returns')}
+            {rInput('Ozon代理佣金', 'ozonCommission')}
+            {rInput('配送服务', 'deliveryService')}
+            {rInput('合作伙伴服务', 'partnerServices')}
+            {rInput('FBO服务', 'fboService')}
+            {rInput('推广和广告', 'promotionAdvertising')}
+            {rInput('其他服务与罚款', 'otherFines')}
+            {rInput('赔偿和赔偿返还', 'compensation')}
+            {rInput('其他应计项目', 'otherAccruals')}
           </div>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-          <h2 className="font-semibold text-gray-900 mb-4">💰 额外成本</h2>
-          <div className="grid grid-cols-2 gap-4">
-            {input('采购成本', 'purchaseCost')}
-            {input('国际运费', 'shippingCost')}
-            {input('人工成本', 'laborCost')}
-            {input('营销推广费用', 'marketingCost')}
-            {input('其他费用', 'otherCost')}
+          <h2 className="font-semibold text-gray-900 mb-4">💱 汇率</h2>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">1 卢布 =</span>
+            <input type="number" step="0.0001" value={data.exchangeRate || ''} onChange={(e) => set('exchangeRate', e.target.value)}
+              className="w-32 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
+            <span className="text-sm text-gray-500">人民币</span>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+          <h2 className="font-semibold text-gray-900 mb-1">💰 额外成本 <span className="text-xs text-gray-400 font-normal">（人民币 ¥）</span></h2>
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            {rInput('采购成本', 'purchaseCost')}
+            {rInput('国际运费', 'shippingCost')}
+            {rInput('人工成本', 'laborCost')}
+            {rInput('营销推广费用', 'marketingCost')}
+            {rInput('其他费用', 'otherCost')}
           </div>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
           <h2 className="font-semibold text-gray-900 mb-4">📈 利润分析</h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <div><span className="text-gray-500">平台费用合计</span><p className="text-lg font-bold">¥{c.tp.toFixed(2)}</p></div>
-            <div><span className="text-gray-500">额外成本合计</span><p className="text-lg font-bold">¥{c.tc.toFixed(2)}</p></div>
-            <div className="col-span-2 border-t pt-3 grid grid-cols-3 gap-4">
-              <div><span className="text-gray-500">毛利润</span><p className={`text-lg font-bold ${c.gp>=0?'text-green-600':'text-red-600'}`}>¥{c.gp.toFixed(2)}</p></div>
-              <div><span className="text-gray-500">净利润</span><p className={`text-lg font-bold ${c.np>=0?'text-green-600':'text-red-600'}`}>¥{c.np.toFixed(2)}</p></div>
-              <div><span className="text-gray-500">利润率</span><p className={`text-lg font-bold ${c.pm>=0?'text-green-600':'text-red-600'}`}>{c.pm.toFixed(1)}%</p></div>
+            <div><span className="text-gray-500">Ozon净收入 (卢布)</span><p className="text-lg font-bold">₽{c.rub.toFixed(2)}</p></div>
+            <div><span className="text-gray-500">Ozon净收入 (人民币)</span><p className="text-lg font-bold">¥{c.rmb.toFixed(2)}</p></div>
+            <div><span className="text-gray-500">额外成本合计</span><p className="text-lg font-bold text-red-600">¥{c.cost.toFixed(2)}</p></div>
+            <div className="col-span-2 border-t pt-3 grid grid-cols-2 gap-4">
+              <div><span className="text-gray-500">净利润</span><p className={`text-xl font-bold ${c.np>=0?'text-green-600':'text-red-600'}`}>¥{c.np.toFixed(2)}</p></div>
+              <div><span className="text-gray-500">利润率</span><p className={`text-xl font-bold ${c.pm>=0?'text-green-600':'text-red-600'}`}>{c.pm.toFixed(1)}%</p></div>
             </div>
           </div>
         </div>

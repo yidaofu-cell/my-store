@@ -128,28 +128,34 @@ export const ozonReports = pgTable('ozon_reports', {
   year: integer('year').notNull(),
   monthNum: integer('month_num').notNull(),
 
-  // Ozon 平台数据
-  totalRevenue: real('total_revenue').notNull().default(0),
-  ozonCommission: real('ozon_commission').notNull().default(0),
-  logisticsFee: real('logistics_fee').notNull().default(0),
-  returnLoss: real('return_loss').notNull().default(0),
-  finesPenalties: real('fines_penalties').notNull().default(0),
-  otherPlatformFees: real('other_platform_fees').notNull().default(0),
-  netPayout: real('net_payout').notNull().default(0),
+  // Ozon 平台数据（单位：卢布 RUB）
+  salesRevenue: real('sales_revenue').notNull().default(0),           // 销售
+  returns: real('returns').notNull().default(0),                      // 退货
+  ozonCommission: real('ozon_commission').notNull().default(0),      // Ozon代理佣金
+  deliveryService: real('delivery_service').notNull().default(0),    // 配送服务
+  partnerServices: real('partner_services').notNull().default(0),    // 合作伙伴服务
+  fboService: real('fbo_service').notNull().default(0),              // FBO服务
+  promotionAdvertising: real('promotion_advertising').notNull().default(0), // 推广和广告
+  otherFines: real('other_fines').notNull().default(0),              // 其他服务与罚款
+  compensation: real('compensation').notNull().default(0),           // 赔偿和赔偿返还
+  otherAccruals: real('other_accruals').notNull().default(0),        // 其他应计项目
 
-  // 额外成本
-  purchaseCost: real('purchase_cost').notNull().default(0),
-  shippingCost: real('shipping_cost').notNull().default(0),
-  laborCost: real('labor_cost').notNull().default(0),
-  marketingCost: real('marketing_cost').notNull().default(0),
-  otherCost: real('other_cost').notNull().default(0),
+  // 汇率
+  exchangeRate: real('exchange_rate').notNull().default(0.08),       // 1 RUB = ? RMB
+
+  // 额外成本（单位：人民币 RMB）
+  purchaseCost: real('purchase_cost').notNull().default(0),          // 采购成本
+  shippingCost: real('shipping_cost').notNull().default(0),          // 国际运费
+  laborCost: real('labor_cost').notNull().default(0),                // 人工成本
+  marketingCost: real('marketing_cost').notNull().default(0),        // 营销推广费用
+  otherCost: real('other_cost').notNull().default(0),                // 其他费用
 
   // 计算结果
-  totalPlatformFees: real('total_platform_fees').notNull().default(0),
-  totalAdditionalCost: real('total_additional_cost').notNull().default(0),
-  grossProfit: real('gross_profit').notNull().default(0),
-  netProfit: real('net_profit').notNull().default(0),
-  profitMargin: real('profit_margin').notNull().default(0),
+  ozonNetRub: real('ozon_net_rub').notNull().default(0),             // Ozon净收入(卢布)
+  ozonNetRmb: real('ozon_net_rmb').notNull().default(0),             // Ozon净收入(人民币)
+  totalAdditionalCost: real('total_additional_cost').notNull().default(0), // 额外成本合计(RMB)
+  netProfit: real('net_profit').notNull().default(0),                // 净利润(RMB)
+  profitMargin: real('profit_margin').notNull().default(0),          // 利润率(%)
 
   // 附件
   screenshotUrl: varchar('screenshot_url', { length: 500 }).default(''),
